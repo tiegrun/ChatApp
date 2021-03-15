@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Platform, KeyboardAvoidingView, Text, StyleSheet} from 'react-native';
-import { GiftedChat, Bubble } from 'react-native-gifted-chat';
+import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
+// import { AsyncStorage, NetInfo} from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-community/async-storage';
+import NetInfo from "@react-native-community/netinfo";
 
 const firebase = require('firebase');
 require('firebase/firestore');
@@ -68,7 +71,6 @@ export default class Chat extends React.Component {
       //    },
       // ],
     })
-
   }
 
   onCollectionUpdate = (querySnapshot) => {
@@ -97,34 +99,123 @@ export default class Chat extends React.Component {
 
   };
 
+  handleConnectivityChange = state => {
+    const isConnected = state.isConnected;
+    if (isConnected == true) {
+      this.setState({
+        isConnected: true
+      });
+      this.unsubscribe = this.referenceMessages
+        .orderBy("createdAt", "desc")
+        .onSnapshot(this.onCollectionUpdate);
+    } else {
+      this.setState({
+        isConnected: false
+      });
+    }
+  };
+
+  async getMessages() {
+    let messages = '';
+    try {
+      messages = await AsyncStorage.getItem('messages') || [];
+      this.setState({
+        messages: JSON.parse(messages)
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   componentDidMount() {
 
     this.init();
+
+    // this.getMessages();
+
+//first var
+    // NetInfo.fetch().then(connection => {
+    //   if (connection.isConnected) {
+    //     console.log('online');
+    //     this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
+    //       if (!user) {
+    //         await firebase.auth().signInAnonymously();
+    //       }
+        
+    //       //update user state with currently active user data
+    //       this.setState({
+    //         messages: [],
+    //         uid: user.uid,
+    //         loggedInText: 'Hello there',
+    //       });
+    //     });
     
-   
-    this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
-      if (!user) {
-        await firebase.auth().signInAnonymously();
-      }
-    
-      //update user state with currently active user data
-      this.setState({
-        messages: [],
-        uid: user.uid,
-        loggedInText: 'Hello there',
+    //     this.referenceMessages = firebase.firestore().collection('messages');
+    //     this.unsubscribe = this.referenceMessages.orderBy('createdAt', 'desc').onSnapshot(this.onCollectionUpdate);
+    //   } else {
+    //     console.log('offline');
+    //     this.getMessages();
+    //   }
+    // });
+ //first var   
+
+      NetInfo.addEventListener(state => {
+        this.handleConnectivityChange(state);
       });
-    });
 
-    this.referenceMessages = firebase.firestore().collection('messages');
-    this.unsubscribe = this.referenceMessages.onSnapshot(this.onCollectionUpdate);
+      NetInfo.fetch().then(state => {
 
+        const isConnected = state.isConnected;
+
+        if (isConnected) {
+          this.setState({
+            isConnected: true
+          });
+
+          this.authUnsubscribe = firebase.auth().onAuthStateChanged(async user => {
+
+            if (!user) {
+              await firebase.auth().signInAnonymously();
+            }
+
+            this.setState({
+              uid: user.uid,
+              messages: []
+            });
+
+            this.unsubscribe = this.referenceMessages.orderBy("createdAt", "desc").onSnapshot(this.onCollectionUpdate);
+          });
+        } else {
+
+          this.setState({
+            isConnected: false
+          });
+
+          this.getMessages();
+        }
+      });
+   
+    // this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
+    //   if (!user) {
+    //     await firebase.auth().signInAnonymously();
+    //   }
     
+    //   //update user state with currently active user data
+    //   this.setState({
+    //     messages: [],
+    //     uid: user.uid,
+    //     loggedInText: 'Hello there',
+    //   });
+    // });
 
+    // this.referenceMessages = firebase.firestore().collection('messages');
+    // this.unsubscribe = this.referenceMessages.orderBy('createdAt', 'desc').onSnapshot(this.onCollectionUpdate);
+    
   }
 
   componentWillUnmount() {
-    this.unsubscribe();
     this.authUnsubscribe();
+    this.unsubscribe();
   }
 
   addMessages = () => {
@@ -144,6 +235,25 @@ export default class Chat extends React.Component {
 
   };
 
+  async saveMessages() {
+    try {
+      await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  async deleteMessages() {
+    try {
+      await AsyncStorage.removeItem('messages');
+      this.setState({
+        messages: []
+      })
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   onSend(messages = []) {
 
     this.setState(
@@ -153,11 +263,11 @@ export default class Chat extends React.Component {
 
       () => {
         this.addMessages();
-       
+        this.saveMessages();
         console.log(this.state.messages)
       }
     );
-  }
+  };
 
   renderBubble(props) {
     return (
@@ -169,6 +279,17 @@ export default class Chat extends React.Component {
     )
   }
 
+  renderInputToolbar(props) {
+    if (this.state.isConnected == false) {
+    } else {
+      return(
+        <InputToolbar
+        {...props}
+        />
+      );
+    }
+  }
+
   render() {
    console.log(this.state.messages)
     return (
@@ -177,6 +298,7 @@ export default class Chat extends React.Component {
       <Text>{this.state.loggedInText}</Text>
       <GiftedChat 
         renderBubble={this.renderBubble.bind(this)}
+        renderInputToolbar={this.renderInputToolbar.bind(this)}
         messages={this.state.messages} 
         onSend={messages => this.onSend(messages)}
         user={{
