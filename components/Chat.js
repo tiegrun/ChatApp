@@ -1,9 +1,16 @@
 import React from 'react';
-import { View, Platform, KeyboardAvoidingView, Text, StyleSheet} from 'react-native';
+import { View, Platform, KeyboardAvoidingView, Text, StyleSheet, Image} from 'react-native';
 import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
 // import { AsyncStorage, NetInfo} from '@react-native-community/async-storage';
 import AsyncStorage from '@react-native-community/async-storage';
 import NetInfo from "@react-native-community/netinfo";
+
+import * as Permissions from 'expo-permissions';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+import MapView from 'react-native-maps';
+
+import CustomActions from './CustomActions';
 
 const firebase = require('firebase');
 require('firebase/firestore');
@@ -23,8 +30,7 @@ export default class Chat extends React.Component {
       uid: "",
       loggedInText: "",
       isConnected: false,
-      image: "",
-      location: "",
+      image: null,
     }
 
     if (!firebase.apps.length) {
@@ -51,25 +57,6 @@ export default class Chat extends React.Component {
 
     this.setState({
       bgColor: color,
-
-      // messages: [
-      //   {
-      //     _id: 1,
-      //     text: 'Hello developer',
-      //     createdAt: new Date(),
-      //     user: {
-      //       _id: 2,
-      //       name: 'React Native',
-      //       avatar: 'https://placeimg.com/140/140/any',
-      //     },
-      //    },
-      //    {
-      //     _id: 2,
-      //     text: `${name} has entered the chat`,
-      //     createdAt: new Date(),
-      //     system: true,
-      //    },
-      // ],
     })
   }
 
@@ -131,34 +118,6 @@ export default class Chat extends React.Component {
 
     this.init();
 
-    // this.getMessages();
-
-//first var
-    // NetInfo.fetch().then(connection => {
-    //   if (connection.isConnected) {
-    //     console.log('online');
-    //     this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
-    //       if (!user) {
-    //         await firebase.auth().signInAnonymously();
-    //       }
-        
-    //       //update user state with currently active user data
-    //       this.setState({
-    //         messages: [],
-    //         uid: user.uid,
-    //         loggedInText: 'Hello there',
-    //       });
-    //     });
-    
-    //     this.referenceMessages = firebase.firestore().collection('messages');
-    //     this.unsubscribe = this.referenceMessages.orderBy('createdAt', 'desc').onSnapshot(this.onCollectionUpdate);
-    //   } else {
-    //     console.log('offline');
-    //     this.getMessages();
-    //   }
-    // });
- //first var   
-
       NetInfo.addEventListener(state => {
         this.handleConnectivityChange(state);
       });
@@ -194,23 +153,6 @@ export default class Chat extends React.Component {
           this.getMessages();
         }
       });
-   
-    // this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
-    //   if (!user) {
-    //     await firebase.auth().signInAnonymously();
-    //   }
-    
-    //   //update user state with currently active user data
-    //   this.setState({
-    //     messages: [],
-    //     uid: user.uid,
-    //     loggedInText: 'Hello there',
-    //   });
-    // });
-
-    // this.referenceMessages = firebase.firestore().collection('messages');
-    // this.unsubscribe = this.referenceMessages.orderBy('createdAt', 'desc').onSnapshot(this.onCollectionUpdate);
-    
   }
 
   componentWillUnmount() {
@@ -233,6 +175,7 @@ export default class Chat extends React.Component {
       uid: this.state.uid,
     });
 
+    console.log(message)
   };
 
   async saveMessages() {
@@ -264,7 +207,7 @@ export default class Chat extends React.Component {
       () => {
         this.addMessages();
         this.saveMessages();
-        console.log(this.state.messages)
+        // console.log(this.state.messages)
       }
     );
   };
@@ -274,7 +217,6 @@ export default class Chat extends React.Component {
       <Bubble {...props} wrapperStyle={{
         right: {backgroundColor: '#000'},
         left: {backgroundColor: '#fff'}
-        
         }}/>
     )
   }
@@ -290,16 +232,48 @@ export default class Chat extends React.Component {
     }
   }
 
+  renderCustomActions = (props) => {
+    return <CustomActions {...props} />;
+  };
+
+  renderCustomView (props) {
+    const { currentMessage} = props;
+    if (currentMessage.location) {
+      return (
+          <MapView
+            style={{width: 150,
+              height: 100,
+              borderRadius: 13,
+              margin: 3}}
+            region={{
+              latitude: currentMessage.location.latitude,
+              longitude: currentMessage.location.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          />
+      );
+    }
+    return null;
+  }
+
   render() {
    console.log(this.state.messages)
+
     return (
 
     <View style={{flex: 1, backgroundColor: this.state.bgColor }}>
       <Text>{this.state.loggedInText}</Text>
+      {this.state.image && 
+                    <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />
+                }
       <GiftedChat 
         renderBubble={this.renderBubble.bind(this)}
         renderInputToolbar={this.renderInputToolbar.bind(this)}
+        renderActions={this.renderCustomActions.bind(this)}
+        renderCustomView={this.renderCustomView.bind(this)}
         messages={this.state.messages} 
+        image={this.state.image}
         onSend={messages => this.onSend(messages)}
         user={{
           _id: 1,
@@ -314,11 +288,3 @@ export default class Chat extends React.Component {
     );
   };
 }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-// })
