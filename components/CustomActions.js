@@ -21,71 +21,68 @@ export default class CustomActions extends React.Component {
   }
 
   pickImage = async () => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
- 
-    if(status === 'granted') {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'Images',
-      }).catch(error => console.log(error));
- 
-      // if (!result.cancelled) {
-      //   this.setState({
-      //     image: result
-      //   });  
-      // }
 
-      if (!result.cancelled){
-        const imageUrl = await this.uploadImage(result.uri);
-        this.props.onSend({ image: imageUrl})
-      }
+    try{
+      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
  
+      if(status === 'granted') {
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: 'Images',
+        }).catch(error => console.log(error));
+  
+        if (!result.cancelled){
+          const imageUrl = await this.uploadImage(result.uri);
+          this.props.onSend({ image: imageUrl})
+        }
+  
+      }
+    }
+    catch (error) {
+      console.log(error);
     }
   }
 
   takePhoto = async () => {
-    const { status } = await Permissions.askAsync(
-      Permissions.CAMERA_ROLL,
-      Permissions.CAMERA
-      );
- 
-    if(status === 'granted') {
-      let result = await ImagePicker.launchCameraAsync({
-        mediaTypes: 'Images',
-      }).catch(error => console.log(error));
- 
-      // if (!result.cancelled) {
-      //   this.setState({
-      //     image: result
-      //   });  
-      // }
-
-      if (!result.cancelled){
-        const imageUrl = await this.uploadImage(result.uri);
-        this.props.onSend({ image: imageUrl})
+    try {
+      const { status } = await Permissions.askAsync(
+        Permissions.CAMERA_ROLL,
+        Permissions.CAMERA
+        );
+   
+      if(status === 'granted') {
+        let result = await ImagePicker.launchCameraAsync({
+          mediaTypes: 'Images',
+        }).catch(error => console.log(error));
+   
+        if (!result.cancelled){
+          const imageUrl = await this.uploadImage(result.uri);
+          this.props.onSend({ image: imageUrl})
+        }
+   
       }
- 
+    }
+    catch (error) {
+      console.log(error.message);
     }
   }
 
   getLocation = async () => {
-    const { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if(status === 'granted') {
-      let result = await Location.getCurrentPositionAsync({});
- 
-      // if (result) {
-      //   this.setState({
-      //     location: result
-      //   });
-      // }
-
-      if (result) {
-        this.props.onSend({
-            location: {
-                longitude: result.coords.longitude,
-                latitude: result.coords.latitude,
-            },
-        });
+    try {
+      const { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if(status === 'granted') {
+        let result = await Location.getCurrentPositionAsync({});
+        if (result) {
+          this.props.onSend({
+              location: {
+                  longitude: result.coords.longitude,
+                  latitude: result.coords.latitude,
+              },
+          });
+      }
+      }
     }
+    catch (error) {
+      console.log(error);
     }
   }
 
@@ -105,7 +102,6 @@ export default class CustomActions extends React.Component {
         xhr.send(null);
       });
 
-      
       let uriGetName = uri.split('/')
       let imageName = uriGetName[uriGetName.length - 1]
 
@@ -122,7 +118,6 @@ export default class CustomActions extends React.Component {
       console.log(error)
     }
   }
-
 
   onActionPress = () => {
     const options = ['Choose From Library', 'Take Picture', 'Send Location', 'Cancel'];

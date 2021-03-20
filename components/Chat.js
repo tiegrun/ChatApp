@@ -65,7 +65,7 @@ export default class Chat extends React.Component {
     // go through each document
     querySnapshot.forEach((doc) => {
       // get the QueryDocumentSnapshot's data
-      var data = doc.data();
+      const data = doc.data();
 
       messages.push({
         _id: data._id,
@@ -264,9 +264,7 @@ export default class Chat extends React.Component {
 
     <View style={{flex: 1, backgroundColor: this.state.bgColor }}>
       <Text>{this.state.loggedInText}</Text>
-      {this.state.image && 
-                    <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />
-                }
+      {this.state.image && <Image source={{uri: this.state.image.uri}} style={{width: 200, height: 200}} />}
       <GiftedChat 
         renderBubble={this.renderBubble.bind(this)}
         renderInputToolbar={this.renderInputToolbar.bind(this)}
