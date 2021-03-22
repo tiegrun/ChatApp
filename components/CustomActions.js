@@ -1,40 +1,49 @@
 import React from 'react';
-import { StyleSheet, View, Text, Button, TouchableOpacity } from 'react-native';
-
+import {
+  StyleSheet, View, Text, TouchableOpacity,
+} from 'react-native';
 import PropTypes from 'prop-types';
-
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 
 const firebase = require('firebase');
 
+/**
+*@requires react
+*@requires prop-types
+*@requires react-native
+*@requires expo-permissions
+*@requires expo-image-picker
+*@requires expo-location
+*@requires firebase
+*@requires firestore
+*/
 
 export default class CustomActions extends React.Component {
-
   constructor() {
     super();
     this.state = {
       image: null,
-      location: null
-    }; 
+      location: null,
+    };
   }
 
+  /**
+  * allows users to pick an image from gallery
+  *@function pickImage
+  */
   pickImage = async () => {
-
-    try{
+    try {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
- 
-      if(status === 'granted') {
+      if (status === 'granted') {
         let result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: 'Images',
         }).catch(error => console.log(error));
-  
-        if (!result.cancelled){
+        if (!result.cancelled) {
           const imageUrl = await this.uploadImage(result.uri);
-          this.props.onSend({ image: imageUrl})
+          this.props.onSend({ image: imageUrl });
         }
-  
       }
     }
     catch (error) {
@@ -42,23 +51,24 @@ export default class CustomActions extends React.Component {
     }
   }
 
+  /**
+  *allows user to take a photo
+  *@function takePhoto
+  */
   takePhoto = async () => {
     try {
       const { status } = await Permissions.askAsync(
         Permissions.CAMERA_ROLL,
-        Permissions.CAMERA
-        );
-   
-      if(status === 'granted') {
+        Permissions.CAMERA,
+      );
+      if (status === 'granted') {
         let result = await ImagePicker.launchCameraAsync({
           mediaTypes: 'Images',
         }).catch(error => console.log(error));
-   
-        if (!result.cancelled){
+        if (!result.cancelled) {
           const imageUrl = await this.uploadImage(result.uri);
-          this.props.onSend({ image: imageUrl})
+          this.props.onSend({ image: imageUrl });
         }
-   
       }
     }
     catch (error) {
@@ -66,19 +76,23 @@ export default class CustomActions extends React.Component {
     }
   }
 
+  /**
+  *users current location
+  *@function getLocation
+  */
   getLocation = async () => {
     try {
       const { status } = await Permissions.askAsync(Permissions.LOCATION);
-      if(status === 'granted') {
+      if (status === 'granted') {
         let result = await Location.getCurrentPositionAsync({});
         if (result) {
           this.props.onSend({
-              location: {
-                  longitude: result.coords.longitude,
-                  latitude: result.coords.latitude,
-              },
+            location: {
+              longitude: result.coords.longitude,
+              latitude: result.coords.latitude,
+            },
           });
-      }
+        }
       }
     }
     catch (error) {
@@ -86,14 +100,21 @@ export default class CustomActions extends React.Component {
     }
   }
 
-    uploadImage = async (uri) => {
-      try{
-      const blob = await new Promise((resolve, reject) =>{
+  /**
+  * uploading image as blob to cloud
+  * @async
+  * @function uploadImage
+  * @param {string}
+  * @returns {promise} url
+  */
+  uploadImage = async (uri) => {
+    try {
+      const blob = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.onload = function(){
+        xhr.onload = function () {
           resolve(xhr.response);
         };
-        xhr.onerror = function(e) {
+        xhr.onerror = function (e) {
           console.log(e);
           reject(new TypeError('Network request failed'));
         };
@@ -102,10 +123,10 @@ export default class CustomActions extends React.Component {
         xhr.send(null);
       });
 
-      let uriGetName = uri.split('/')
-      let imageName = uriGetName[uriGetName.length - 1]
+      let uriGetName = uri.split('/');
+      let imageName = uriGetName[uriGetName.length - 1];
 
-      const ref = firebase.storage().ref().child(`${imageName}`)
+      const ref = firebase.storage().ref().child(`${imageName}`);
       const snapshot = await ref.put(blob);
 
       blob.close();
@@ -114,11 +135,16 @@ export default class CustomActions extends React.Component {
 
       return imageUrl;
     }
-    catch(error){
-      console.log(error)
+    catch(error) {
+      console.log(error);
     }
   }
 
+  /**
+  * When + button is pressed actionSheet is called
+  * @function onActionPress
+  * @returns {actionSheet} - options to choose from library, take a photo or send a current location
+  */
   onActionPress = () => {
     const options = ['Choose From Library', 'Take Picture', 'Send Location', 'Cancel'];
     const cancelButtonIndex = options.length - 1;
@@ -143,17 +169,15 @@ export default class CustomActions extends React.Component {
   };
 
   render() {
-    
     return (
       <TouchableOpacity style={[styles.container]} onPress={this.onActionPress}>
        <View style={[styles.wrapper, this.props.wrapperStyle]}>
          <Text style={[styles.iconText, this.props.iconTextStyle]}>+</Text>
        </View>
-     </TouchableOpacity>
+      </TouchableOpacity>
     );
   }
-
-} 
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -175,9 +199,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     textAlign: 'center',
   },
- });
+});
 
- CustomActions.contextTypes = {
+CustomActions.contextTypes = {
   actionSheet: PropTypes.func,
- };
-  
+};
