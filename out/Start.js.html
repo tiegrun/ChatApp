@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Start.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Start.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React from 'react';
+import {
+  StyleSheet, View, Text, TextInput, ImageBackground, TouchableOpacity, Dimensions,
+} from 'react-native';
+
+const backgroundImage = require('../assets/BackgroundImage.png');
+const heightPrimary = Dimensions.get('window').height;
+const fixedWidth = '88%';
+const fixedHeight = heightPrimary * 0.44;
+const fixedHeightSecondary = '30%';
+
+/**
+*@requires react
+*@requires react-native
+*/
+
+export default class Start extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: '',
+      color: '',
+    };
+  }
+
+  render() {
+    return (
+      &lt;View style={styles.container}>
+        &lt;ImageBackground source={backgroundImage} style={styles.backgroundImage}>
+          &lt;View style={styles.header}>
+            &lt;Text style={styles.title}>Chat App&lt;/Text>
+          &lt;/View>
+          &lt;View style={styles.section}>
+            &lt;View style={styles.inputPlace}>
+              &lt;TextInput style={styles.textInput} onChangeText={(name) => this.setState({ name })} value={this.state.name} placeholder='You Name' />
+            &lt;/View>
+            &lt;View style={styles.chooseColor}>
+              &lt;View style={styles.chooseColorTextPlace}>
+                &lt;Text style={styles.chooseColorText}>Choose Background Color:&lt;/Text>
+              &lt;/View>
+              &lt;View style={styles.circlePlaces}>
+                &lt;TouchableOpacity onPress={() => this.setState({ color: '#090C08' })} style={styles.circle1} />
+                &lt;TouchableOpacity onPress={() => this.setState({ color: '#474056' })} style={styles.circle2} />
+                &lt;TouchableOpacity onPress={() => this.setState({ color: '#8A95A5' })} style={styles.circle3} />
+                &lt;TouchableOpacity onPress={() => this.setState({ color: '#B9C6AE' })} style={styles.circle4} />
+              &lt;/View>
+            &lt;/View>
+            &lt;TouchableOpacity onPress={() => this.props.navigation.navigate('Chat', { name: this.state.name, color: this.state.color })} style={styles.button}>
+              &lt;Text style={styles.buttonText}>Start Chatting&lt;/Text>
+            &lt;/TouchableOpacity>
+          &lt;/View>
+        &lt;/ImageBackground>
+      &lt;/View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'column',
+  },
+  backgroundImage: {
+    height: heightPrimary,
+    resizeMode: 'cover',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  header: {
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 45,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  section: {
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    height: fixedHeight,
+    width: fixedWidth,
+    backgroundColor: '#FFFFFF',
+  },
+  inputPlace: {
+    width: fixedWidth,
+    borderWidth: 1,
+  },
+  textInput: {
+    fontSize: 16,
+    fontWeight: '300',
+    color: '#757083',
+    opacity: 50,
+    padding: 10,
+  },
+  chooseColor: {
+    height: fixedHeightSecondary,
+    width: fixedWidth,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+  },
+  chooseColorTextPlace: {
+    marginBottom: 15,
+  },
+  chooseColorText: {
+    fontSize: 16,
+    fontWeight: '300',
+    color: '#757083',
+    opacity: 100,
+  },
+  circlePlaces: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  circle1: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 6,
+    backgroundColor: '#090C08',
+  },
+  circle2: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#474056',
+  },
+  circle3: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#8A95A5',
+  },
+  circle4: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#B9C6AE',
+  },
+  button: {
+    width: fixedWidth,
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#757083',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '300',
+    color: '#FFFFFF',
+  },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="chat.html">chat</a></li><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addMessage">addMessage</a></li><li><a href="global.html#getLocation">getLocation</a></li><li><a href="global.html#getMessages">getMessages</a></li><li><a href="global.html#onActionPress">onActionPress</a></li><li><a href="global.html#onCollectionUpdate">onCollectionUpdate</a></li><li><a href="global.html#onSend">onSend</a></li><li><a href="global.html#pickImage">pickImage</a></li><li><a href="global.html#renderBubblethebackgroundcolorofmessagebubbles,bothsides">renderBubble
+the background color of message bubbles, both sides</a></li><li><a href="global.html#renderInputToolbar">renderInputToolbar</a></li><li><a href="global.html#saveMessages">saveMessages</a></li><li><a href="global.html#takePhoto">takePhoto</a></li><li><a href="global.html#uploadImage">uploadImage</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Mon Mar 22 2021 00:07:24 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
